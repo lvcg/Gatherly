@@ -1,69 +1,23 @@
-const form = document.getElementById('generate-form');
-const qr = document.getElementById('qrcode');
-
-const onGenerateSubmit = (e) => {
-    e.preventDefault();
-
-    clearUI();
-
-    const url = document.getElementById('url').value;
-    const size = document.getElementById('size').value;
-
-    if(url === '') {
-        alert('Please enter a URL');
-    } else {
-        showSpinner();
-        
-        setTimeout(() => {
-            hideSpinner();
-
-            generateQRCode(url,size);
-
-            setTimeout (() => {
-                const saveUrl =qr.querySelector('img').src;
-                createSaveBtn(saveUrl);
-            }, 50);
-    }, 1000);
- }
-};
-
-const generateQRCode = () => {
-    const qrcode = new QRCode(qrcode, {
-        text: url,
-        width: size,
-        height: size,
-    });
-}
-
-const clearUI = () => {
-    qr.innerHTML = '';
-    const saveLink = document.getElementById('save-link');
-    if(createSaveBtn) {
-        saveLink.remove();
-    }
-};
-
-
-const showSpinner = () => {
-    document.getElementById('spinner').style.display = 'block';
-};
-
-const hideSpinner = () => {
-    document.getElementById('spinner').style.display = 'none';
-};
-
-
-
-const createSaveBtn = (saveUrl) => {
-    const link = document.createElement('a');
-    link.id = 'save-link';
-    link.classList = 'bg-red-500 hover:bg-red-700 text-white font-bold py-2 rounded w-1/3 m-auto my-5'
-    link.href = saveUrl;
-    link.download = 'qrcode';
-    link.innerHTML = 'Save QR Code';
-    document.getElementById('generated').appendChild(link);
-};
-
-hideSpinner();
-
-form.addEventListener('submit', onGenerateSubmit);
+const events=[
+{id:'midnight-gardens',title:'Midnight Gardens',category:'Music',date:'2026-10-18',time:'8:00 PM',venue:'Garfield Park Conservatory',city:'Chicago, IL',price:48,sold:184,capacity:220,image:'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=900&q=85',description:'An after-hours live music experience tucked among tropical palms, warm light, and midnight blooms.'},
+{id:'table-no-seven',title:'Table No. Seven',category:'Food & Drink',date:'2026-10-24',time:'7:00 PM',venue:'The Joinery',city:'Chicago, IL',price:72,sold:42,capacity:60,image:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=85',description:'A one-night-only supper club with seven courses, natural wine, and the people you have not met yet.'},
+{id:'form-light',title:'Form & Light',category:'Arts',date:'2026-11-02',time:'6:30 PM',venue:'West Loop Gallery',city:'Chicago, IL',price:28,sold:96,capacity:150,image:'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=900&q=85',description:'An immersive exhibition where architecture, projection, and sound bend the edges of the room.'},
+{id:'slow-sunday',title:'Slow Sunday Social',category:'Wellness',date:'2026-11-09',time:'10:00 AM',venue:'The Robey Rooftop',city:'Chicago, IL',price:32,sold:58,capacity:80,image:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=900&q=85',description:'A gentle morning of guided movement, good coffee, and conversations above the city.'},
+{id:'analog-nights',title:'Analog Nights',category:'Music',date:'2026-11-14',time:'9:00 PM',venue:'Sleeping Village',city:'Chicago, IL',price:36,sold:126,capacity:200,image:'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?auto=format&fit=crop&w=900&q=85',description:'Vinyl selectors, warm sound, and a dance floor with a strict no-phone spirit.'},
+{id:'clay-wine',title:'Clay & Wine',category:'Arts',date:'2026-11-21',time:'6:00 PM',venue:'Lillstreet Art Center',city:'Chicago, IL',price:54,sold:35,capacity:48,image:'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=900&q=85',description:'Shape something by hand while a neighborhood sommelier pours a flight of low-intervention wines.'}];
+const activities=[['🎟','Jamie R. bought 2 tickets','2 min ago'],['✓','Maya P. checked in','4 min ago'],['🎟','Alex C. bought 1 ticket','8 min ago'],['↗','Midnight Gardens shared','13 min ago']];let tickets=JSON.parse(localStorage.getItem('gatherly-tickets')||'[]'),currentFilter='All';const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+function formatDate(date){return new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric'}).format(new Date(`${date}T12:00:00`))}function dateParts(date){const d=new Date(`${date}T12:00:00`);return{day:d.getDate(),month:d.toLocaleDateString('en-US',{month:'short'}).toUpperCase()}}
+function eventCard(e){const d=dateParts(e.date);return`<article class="event-card" data-event="${e.id}" tabindex="0"><div class="event-image"><img src="${e.image}" alt="${e.title}" loading="lazy"><div class="event-date"><span>${d.month}</span><b>${d.day}</b></div><span class="event-category">${e.category}</span></div><div class="event-info"><h3>${e.title}</h3><div class="event-meta">${e.time} · ${e.venue}</div><div class="event-bottom"><b>From $${e.price}</b><button>Details →</button></div></div></article>`}
+function renderEvents(){const q=$('#eventSearch').value.trim().toLowerCase(),filtered=events.filter(e=>(currentFilter==='All'||e.category===currentFilter)&&(!q||`${e.title} ${e.category} ${e.venue} ${e.city}`.toLowerCase().includes(q)));$('#eventGrid').innerHTML=filtered.map(eventCard).join('');$('#emptyState').classList.toggle('hidden',filtered.length>0)}
+function navigate(view){$$('.view').forEach(v=>v.classList.remove('active'));$(`#${view}View`).classList.add('active');$$('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===view));if(view==='tickets')renderTickets();if(view==='organizer')renderOrganizer();scrollTo({top:0,behavior:'smooth'})}
+function eventDetail(id){const e=events.find(x=>x.id===id);if(!e)return;$('#eventDetail').innerHTML=`<img class="detail-image" src="${e.image}" alt="${e.title}"><div class="detail-body"><span class="kicker">${e.category}</span><h2>${e.title}</h2><p>${e.description}</p><div class="detail-meta"><div><small>DATE & TIME</small><b>${formatDate(e.date)} · ${e.time}</b></div><div><small>LOCATION</small><b>${e.venue}<br>${e.city}</b></div></div><div class="purchase-row"><div><small>Tickets from</small><strong>$${e.price}</strong></div><button class="primary" data-buy="${e.id}">Get tickets →</button></div></div>`;$('#eventDialog').showModal()}
+function checkout(id){const e=events.find(x=>x.id===id);$('#eventDialog').close();let qty=1;const render=()=>{$('#checkoutContent').innerHTML=`<span class="kicker">SECURE CHECKOUT</span><h2>Complete your order</h2><div class="checkout-step"><i class="active"></i><i class="active"></i><i></i></div><div class="order-line"><img src="${e.image}" alt=""><div><h3>${e.title}</h3><small>${formatDate(e.date)} · ${e.time}<br>${e.venue}</small></div></div><div class="quantity-row"><span>General admission</span><div class="quantity"><button data-qty="down">−</button><b>${qty}</b><button data-qty="up">＋</button></div></div><div class="total-row"><span>Total</span><span>$${e.price*qty}.00</span></div><button class="primary full-button" id="confirmPurchase">Pay securely · $${e.price*qty}.00</button><p style="text-align:center;color:var(--muted);font-size:11px">🔒 Encrypted checkout · Demo payment</p>`;$$('[data-qty]').forEach(b=>b.onclick=()=>{qty=Math.max(1,Math.min(6,qty+(b.dataset.qty==='up'?1:-1)));render()});$('#confirmPurchase').onclick=()=>completePurchase(e,qty)};render();$('#checkoutDialog').showModal()}
+function completePurchase(e,qty){const order=crypto.randomUUID?crypto.randomUUID():Date.now().toString(36);for(let i=0;i<qty;i++)tickets.push({id:`GTH-${order.slice(0,8).toUpperCase()}-${i+1}`,eventId:e.id,checkedIn:false,owner:'Liv Morgan'});saveTickets();$('#checkoutContent').innerHTML=`<div class="checkout-success"><div class="success-icon">✓</div><h2>You’re on the list.</h2><p>${qty} ${qty===1?'ticket':'tickets'} for <b>${e.title}</b> just landed in your wallet.</p><button class="primary" id="viewTickets">View my tickets →</button></div>`;$('#viewTickets').onclick=()=>{$('#checkoutDialog').close();navigate('tickets')};toast('Purchase confirmed — ticket ready')}
+function safeId(id){return id.replace(/[^a-zA-Z0-9_-]/g,'_')}function renderTickets(){$('#ticketCount').textContent=`${tickets.length} upcoming`;$('#noTickets').classList.toggle('hidden',tickets.length>0);$('#ticketList').innerHTML=tickets.map(t=>{const e=events.find(x=>x.id===t.eventId);return`<article class="wallet-ticket" data-ticket="${t.id}"><img src="${e.image}" alt=""><div class="wallet-ticket-info"><span class="kicker">${t.checkedIn?'CHECKED IN':'GENERAL ADMISSION'}</span><h3>${e.title}</h3><p>◷ ${formatDate(e.date)} · ${e.time}</p><p>⌖ ${e.venue}, ${e.city}</p></div><div class="wallet-ticket-code"><div class="mini-qr" id="mini-${safeId(t.id)}"></div><small>Tap to enlarge<br>${t.id}</small></div></article>`}).join('');tickets.forEach(t=>new QRCode(document.getElementById(`mini-${safeId(t.id)}`),{text:JSON.stringify({ticket:t.id,event:t.eventId}),width:70,height:70,colorDark:'#15161a'}))}
+function showTicket(id){const t=tickets.find(x=>x.id===id),e=events.find(x=>x.id===t.eventId);$('#ticketDetail').innerHTML=`<span class="kicker">${t.checkedIn?'CHECKED IN':'YOUR ENTRY PASS'}</span><h2>${e.title}</h2><p>${formatDate(e.date)} · ${e.time}<br>${e.venue}</p><div class="qr-wrap" id="largeQr"></div><div class="ticket-id">${t.id}</div><p style="font-size:12px;color:var(--muted)">This QR code is unique to you. Present it at the door.</p>`;$('#ticketDialog').showModal();new QRCode($('#largeQr'),{text:JSON.stringify({ticket:t.id,event:t.eventId}),width:220,height:220,colorDark:'#15161a'})}
+function renderOrganizer(){const total=events.reduce((a,e)=>a+e.sold,0)+tickets.length;$('#ticketsSold').textContent=total;$('#grossSales').textContent=`$${events.reduce((a,e)=>a+e.sold*e.price,0).toLocaleString()}`;const checked=tickets.filter(t=>t.checkedIn).length;$('#checkinRate').textContent=tickets.length?`${Math.round(checked/tickets.length*100)}%`:'72%';$('#managedEvents').innerHTML=events.slice(0,3).map(e=>`<div class="managed-event"><img src="${e.image}" alt=""><div><h3>${e.title}</h3><p>${formatDate(e.date)} · ${e.sold}/${e.capacity} sold</p></div><div class="progress-wrap">${Math.round(e.sold/e.capacity*100)}%<div class="progress"><i style="width:${e.sold/e.capacity*100}%"></i></div></div></div>`).join('');$('#activityList').innerHTML=activities.map(a=>`<div class="activity"><div class="activity-icon">${a[0]}</div><div><p>${a[1]}</p><time>${a[2]}</time></div></div>`).join('')}
+function simulateScan(){const result=$('#scanResult'),available=tickets.find(t=>!t.checkedIn);if(!available){result.className='scan-error';result.textContent=tickets.length?'No unused demo tickets remain.':'Buy a ticket first to test check-in.';return}available.checkedIn=true;saveTickets();const e=events.find(x=>x.id===available.eventId);result.className='scan-success';result.innerHTML=`✓ Valid ticket — ${available.owner}<br><small>${e.title} · ${available.id}</small>`;activities.unshift(['✓',`${available.owner} checked in`,'just now']);toast('Guest checked in successfully')}
+function createEvent(form){const d=Object.fromEntries(new FormData(form)),e={id:`event-${Date.now()}`,title:d.title,category:d.category,date:d.date,time:new Date(`2000-01-01T${d.time}`).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),venue:d.venue.split(',')[0],city:d.venue.split(',').slice(1).join(',').trim()||'Chicago, IL',price:Number(d.price),sold:0,capacity:120,image:'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=900&q=85',description:d.description};events.unshift(e);$('#createDialog').close();form.reset();renderOrganizer();toast('Event published successfully')}
+function saveTickets(){localStorage.setItem('gatherly-tickets',JSON.stringify(tickets))}function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
+document.addEventListener('click',e=>{const nav=e.target.closest('[data-nav]');if(nav){e.preventDefault();navigate(nav.dataset.nav)}const card=e.target.closest('[data-event]');if(card)eventDetail(card.dataset.event);const buy=e.target.closest('[data-buy]');if(buy)checkout(buy.dataset.buy);const ticket=e.target.closest('[data-ticket]');if(ticket)showTicket(ticket.dataset.ticket);if(e.target.matches('[data-close]'))e.target.closest('dialog').close()});
+$('#filters').onclick=e=>{const b=e.target.closest('[data-filter]');if(!b)return;currentFilter=b.dataset.filter;$$('.chip').forEach(x=>x.classList.toggle('active',x===b));renderEvents()};$('#eventSearch').oninput=renderEvents;$('#searchButton').onclick=renderEvents;$('#seeAll').onclick=()=>{currentFilter='All';$('#eventSearch').value='';$$('.chip').forEach((x,i)=>x.classList.toggle('active',i===0));renderEvents()};$('#openScanner').onclick=()=>{$('#scanResult').className='';$('#scanResult').innerHTML='';$('#scannerDialog').showModal()};$('#simulateScan').onclick=simulateScan;$('#manualEntry').onclick=()=>{const code=prompt('Enter ticket code');if(code){const t=tickets.find(x=>x.id.toLowerCase()===code.toLowerCase());$('#scanResult').className=t?'scan-success':'scan-error';$('#scanResult').textContent=t?'✓ Valid ticket found':'Ticket code not found'}};$('#createEventBtn').onclick=()=>$('#createDialog').showModal();$('#createForm').onsubmit=e=>{e.preventDefault();createEvent(e.currentTarget)};$$('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));renderEvents();renderOrganizer();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
