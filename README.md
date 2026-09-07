@@ -1,6 +1,6 @@
-# Gatherly — Event Management & Ticketing
+# accesscentre — Event Management & Ticketing
 
-Gatherly is a responsive event marketplace and organizer dashboard built from the original QR Code Generator. It demonstrates a connected attendee and organizer journey: event discovery, filtering, demo checkout, unique QR ticket generation, a persistent ticket wallet, event creation, and QR check-in simulation.
+accesscentre is a responsive event marketplace and organizer dashboard built from the original QR Code Generator. It demonstrates a connected attendee and organizer journey: event discovery, filtering, demo checkout, unique QR ticket generation, a persistent ticket wallet, event creation, and QR check-in simulation.
 
 ## Run locally
 
